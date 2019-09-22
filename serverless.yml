@@ -1,0 +1,85 @@
+
+service: serverless-topcoder-autopilot
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    statemachine_arn: ${self:resources.Outputs.ExecutorStateMachine.Value}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+functions:
+  create:
+    handler: schedule-app/schedule_event.schedule
+    events:
+      - http:
+          path: create
+          method: post
+          cors: true
+
+  list:
+    handler: schedule-app/list_event.list
+    events:
+      - http:
+          path: list
+          method: get
+          cors: true
+  
+  executor:
+    handler: executor-app/execute_event.execute
+
+stepFunctions:
+  stateMachines:
+    stateMachines:
+      name: ExecutorStateMachine
+      definition:
+        Comment: "A step function that triggers the Lambda function at scheduled time"
+        StartAt: WaitState
+        States:
+          WaitState:
+            Type: Wait
+            TimestampPath: "$.execution_time"
+            Next: TriggerLambda
+          TriggerLambda:
+            Type: Task
+            Resource:
+              Fn::GetAtt: [executor, Arn]
+            End: true
+
+resources:
+  Outputs:
+    ExecutorStateMachine:
+      Description: The ARN of the Executor State Machine
+      Value:
+        Ref: ExecutorStateMachine
+  Resources:
+    TodosDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+
+plugins:
+  - serverless-step-functions

@@ -1,0 +1,15 @@
+{
+  "name": "Autopilot-Proof-of-Concept",
+  "version": "1.0.0",
+  "description": "Serverless service completely in AWS Ecosystem",
+  "author": "Anurag Gupta",
+  "license": "MIT",
+  "dependencies": {
+    "https": "^1.0.0",
+    "uuid": "^2.0.3"
+  },
+  "devDependencies": {
+    "serverless": "^1.52.2",
+    "serverless-step-functions": "^2.8.0"
+  }
+}
