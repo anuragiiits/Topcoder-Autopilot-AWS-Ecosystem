@@ -1,6 +1,7 @@
 'use strict';
 
 const AWS = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
+const https = require('https');
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 

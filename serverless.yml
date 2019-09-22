@@ -1,4 +1,5 @@
 
+
 service: serverless-topcoder-autopilot
 
 frameworkVersion: ">=1.1.0 <2.0.0"
@@ -18,6 +19,11 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    - Effect: Allow
+      Action:
+        - "states:StartExecution"
+      Resource:
+        - "${self:resources.Outputs.ExecutorStateMachine.Value}"
 
 functions:
   create:
@@ -41,7 +47,7 @@ functions:
 
 stepFunctions:
   stateMachines:
-    stateMachines:
+    stateMachine:
       name: ExecutorStateMachine
       definition:
         Comment: "A step function that triggers the Lambda function at scheduled time"
@@ -53,8 +59,8 @@ stepFunctions:
             Next: TriggerLambda
           TriggerLambda:
             Type: Task
-            Resource:
-              Fn::GetAtt: [executor, Arn]
+            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:296588291450:function:${self:service}-${opt:stage, self:provider.stage}-executor"
+              # Fn::GetAtt: [executor, Arn]
             End: true
 
 resources:

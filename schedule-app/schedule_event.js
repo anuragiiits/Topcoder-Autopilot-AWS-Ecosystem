@@ -37,7 +37,7 @@ module.exports.schedule = (event, context, callback) => {
   dynamoDb.put(params, (error) => {
     // handle potential errors
     if (error) {
-      console.error(error);
+      console.error("Couldn\'t insert", error);
       callback(null, {
         statusCode: error.statusCode || 501,
         headers: { 'Content-Type': 'text/plain' },
@@ -47,6 +47,8 @@ module.exports.schedule = (event, context, callback) => {
     }
 
     const stateMachineArn = process.env.statemachine_arn;
+    console.log("State Machine", stateMachineArn);
+
     const input = {
             "id": params.Item.id,             // Only passing the unique Event ID from this function to state machine instead of passing all the API data
                                               // This approach can be better because we can also update the data (except execution_time) for this event later by 
@@ -55,12 +57,13 @@ module.exports.schedule = (event, context, callback) => {
     }
     const stateMachineParams = {
         stateMachineArn,
-        input: json.dumps(input, indent=4)
+        "input": JSON.stringify(input)
     }
 
     stepfunctions.startExecution(stateMachineParams).promise().then(() => {
         console.log(`Your statemachine ${stateMachineArn} executed successfully`);
     }).catch(error => {
+        console.error(`Your statemachine ${stateMachineArn} failed`, error)
         callback(error.message);
     });
 
