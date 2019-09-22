@@ -1,5 +1,4 @@
 
-
 service: serverless-topcoder-autopilot
 
 frameworkVersion: ">=1.1.0 <2.0.0"
@@ -59,7 +58,7 @@ stepFunctions:
             Next: TriggerLambda
           TriggerLambda:
             Type: Task
-            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:296588291450:function:${self:service}-${opt:stage, self:provider.stage}-executor"
+            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage, self:provider.stage}-executor"
               # Fn::GetAtt: [executor, Arn]
             End: true
 
@@ -89,3 +88,4 @@ resources:
 
 plugins:
   - serverless-step-functions
+  - serverless-pseudo-parameters
