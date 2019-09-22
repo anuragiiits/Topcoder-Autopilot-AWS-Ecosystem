@@ -17,7 +17,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+      Resource: "arn:aws:dynamodb:#{AWS::Region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
     - Effect: Allow
       Action:
         - "states:StartExecution"
@@ -58,8 +58,7 @@ stepFunctions:
             Next: TriggerLambda
           TriggerLambda:
             Type: Task
-            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage, self:provider.stage}-executor"
-              # Fn::GetAtt: [executor, Arn]
+            Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage, self:provider.stage}-executor"
             End: true
 
 resources:
@@ -89,3 +88,4 @@ resources:
 plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
+  

@@ -5,12 +5,12 @@
   "author": "Anurag Gupta",
   "license": "MIT",
   "dependencies": {
-    "https": "^1.0.0",
     "uuid": "^2.0.3"
   },
   "devDependencies": {
     "serverless": "^1.52.2",
     "serverless-pseudo-parameters": "^2.4.0",
-    "serverless-step-functions": "^2.8.0"
+    "serverless-step-functions": "^2.8.0",
+    "standard": "^14.3.1"
   }
 }

@@ -14,7 +14,16 @@ module.exports.schedule = (event, context, callback) => {
     callback(null, {
       statusCode: 400,
       headers: { 'Content-Type': 'text/plain' },
-      body: 'Couldn\'t create the event.',
+      body: 'Couldn\'t create the event. Incomplete Data Sent.',
+    });
+    return;
+  }
+  if (data.method !== 'GET' && data.method !== 'POST' && data.method !== 'PUT' && data.method !== 'PATCH' && data.method !== 'DELETE' && data.method !== 'HEAD') {
+    console.error('Validation Failed');   // Assuming that only these http methods are allowed
+    callback(null, {
+      statusCode: 400,
+      headers: { 'Content-Type': 'text/plain' },
+      body: 'Http Method is not allowed or invalid.',
     });
     return;
   }
@@ -25,13 +34,18 @@ module.exports.schedule = (event, context, callback) => {
       id: uuid.v1(),
       url: data.url,
       method: data.method,
-      payload: data.payload,
-      headers: data.headers,
       execution_time: data.execution_time,
       createdAt: timestamp,
       updatedAt: timestamp,
     },
   };
+
+  if(typeof data.payload === 'string' && data.payload.length > 0){   // because dynamodb doesn't accept empty string through this aws-sdk version.
+    params.Item.payload = data.payload
+  }
+  if(typeof data.headers === 'string' && data.payload.headers > 0){   // because dynamodb doesn't accept empty string through this aws-sdk version.
+    params.Item.headers = data.headers
+  }
 
   // write the event to the database
   dynamoDb.put(params, (error) => {
@@ -47,8 +61,6 @@ module.exports.schedule = (event, context, callback) => {
     }
 
     const stateMachineArn = process.env.statemachine_arn;
-    console.log("State Machine", stateMachineArn);
-
     const input = {
             "id": params.Item.id,             // Only passing the unique Event ID from this function to state machine instead of passing all the API data
                                               // This approach can be better because we can also update the data (except execution_time) for this event later by 
