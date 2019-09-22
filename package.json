@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Serverless service completely in AWS Ecosystem",
   "author": "Anurag Gupta",
-  "license": "MIT",
+  "license": "ISC",
   "dependencies": {
     "uuid": "^2.0.3"
   },
